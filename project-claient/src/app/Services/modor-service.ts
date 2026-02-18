@@ -8,7 +8,6 @@ import { Observable, Subject } from 'rxjs';
 })
 export class ModorService {
   private http = inject(HttpClient);
-  // וודאי שהכתובת הזו נכונה (Donor או Modor?)
   private readonly apiUrl = "https://localhost:7289/api/Donor";
 public refreshList$ = new Subject<void>();
   getAll(): Observable<modorModel[]> {

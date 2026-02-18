@@ -43,8 +43,7 @@ builder.Services.AddScoped<JwtTokenGenerator>();
 // 3. Database Context
 // =======================
 builder.Services.AddDbContext<LotteryContext>(option =>
-    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ??
-   "Data Source=SRV2\\PUPILS;Initial Catalog=talya;Integrated Security=True;Encrypt=True;Trust Server Certificate=True"));
+    option.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=TALYA TOLEDANO;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"));
 
 // =======================
 // 4. CORS Policy

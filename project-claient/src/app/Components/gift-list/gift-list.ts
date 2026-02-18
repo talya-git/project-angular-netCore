@@ -46,12 +46,9 @@ export class GiftList implements OnInit {
   gift: giftModel = {} as giftModel;
   degel: number = 0;
   showAddForm: boolean = false; 
-
-  // --- משתני הסינון החדשים (כאן נפתרת השגיאה שלך) ---
   filterName: string = '';
   filterDonor: string = '';
   filterCount: number = 0;
-  // -----------------------------------------------
 
   newPurchase: any = {
     customerId: null,
@@ -64,7 +61,6 @@ export class GiftList implements OnInit {
   }
 
   loadAllGifts() {
-    // איפוס שדות הסינון בטעינה מחדש
     this.filterName = '';
     this.filterDonor = '';
     this.filterCount = 0;
@@ -182,7 +178,7 @@ export class GiftList implements OnInit {
       next: (res) => {
         if (res && res.winnerFullName) {
           alert(`🎉 יש לנו זוכה! \nהזוכה במתנה "${res.giftName}" הוא/היא: ${res.winnerFullName}`);
-          this.loadAllGifts(); // רענון כדי לראות את הזוכה על הכרטיס
+          this.loadAllGifts(); 
         } else {
           alert("לא נמצא זוכה למתנה זו.");
         }

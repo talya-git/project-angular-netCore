@@ -10,6 +10,7 @@ using WebApplication1.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
+using System; // נחוץ עבור Exception
 
 namespace server.Controllers
 {
@@ -35,7 +36,7 @@ namespace server.Controllers
             if (registerDto == null)
             {
                 _logger.LogWarning("Register attempt with null data.");
-                return BadRequest();
+                return BadRequest(new { message = "לא התקבלו נתונים" });
             }
 
             try
@@ -44,12 +45,15 @@ namespace server.Controllers
                 await this.AuthBLL.Register(customer);
 
                 _logger.LogInformation("User {UserName} registered successfully.", registerDto.UserName);
-                return Ok();
+                return Ok(new { message = "ההרשמה בוצעה בהצלחה" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred during registration for user {UserName}", registerDto.UserName);
-                return StatusCode(500, "Internal server error");
+
+                // כאן השינוי המרכזי: 
+                // במקום 500 כללי, אנחנו מחזירים BadRequest עם ההודעה שכתבנו ב-BLL
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -57,23 +61,24 @@ namespace server.Controllers
         [HttpGet("login")]
         public async Task<ActionResult<AuthDTO>> Login(string userName, string password)
         {
-            var result = await this.AuthBLL.Login(userName, password);
-
-            if (result == null)
+            try
             {
-                _logger.LogWarning("Login failed for user: {UserName}", userName);
-                return Unauthorized();
+                var result = await this.AuthBLL.Login(userName, password);
+
+                if (result == null)
+                {
+                    _logger.LogWarning("Login failed for user: {UserName}", userName);
+                    return Unauthorized(new { message = "שם משתמש או סיסימה שגויים" });
+                }
+
+                _logger.LogInformation("User {UserName} logged in successfully.", userName);
+                return Ok(result);
             }
-
-            _logger.LogInformation("User {UserName} logged in successfully.", userName);
-            return Ok(result);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Login error for user: {UserName}", userName);
+                return BadRequest(new { message = "אירעה שגיאה בתהליך ההתחברות" });
+            }
         }
-    }
-
-    [Authorize(Roles = "manager")]
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AdminController : ControllerBase
-    {
     }
 }

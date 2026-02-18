@@ -38,203 +38,301 @@ namespace WebApplication1.BLL
 
         public async Task<List<GiftDto>> Get()
         {
-            var giftFromDb = await giftDAL.Get();
-
-            var giftDtos = _mapper.Map<List<GiftDto>>(giftFromDb);
-
-            for (int i = 0; i < giftFromDb.Count; i++)
+            try
             {
-                if (giftFromDb[i].Winner != null)
-                {
-                    giftDtos[i].CustomerName = giftFromDb[i].Winner.FirstName + " " + giftFromDb[i].Winner.LastName;
-                }
-                else
-                {
-                    giftDtos[i].CustomerName = "אין זוכה עדיין";
-                }
-            }
+                var giftFromDb = await giftDAL.Get();
+                if (giftFromDb == null) return new List<GiftDto>();
 
-            return giftDtos;
+                var giftDtos = _mapper.Map<List<GiftDto>>(giftFromDb);
+
+                for (int i = 0; i < giftFromDb.Count; i++)
+                {
+                    if (giftFromDb[i].Winner != null)
+                    {
+                        giftDtos[i].CustomerName = giftFromDb[i].Winner.FirstName + " " + giftFromDb[i].Winner.LastName;
+                    }
+                    else
+                    {
+                        giftDtos[i].CustomerName = "אין זוכה עדיין";
+                    }
+                }
+                return giftDtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GiftBLL.Get");
+                throw new Exception("שגיאה בטעינת רשימת המתנות.");
+            }
         }
+
         public async Task<GiftDto> GetById(int id)
         {
-            var giftFromDb = await giftDAL.GetById(id);
-            return _mapper.Map<GiftDto>(giftFromDb);
+            try
+            {
+                var giftFromDb = await giftDAL.GetById(id);
+                return _mapper.Map<GiftDto>(giftFromDb);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GiftBLL.GetById: {Id}", id);
+                throw new Exception("שגיאה בשליפת פרטי המתנה.");
+            }
         }
 
         public async Task Post(GiftDto gift)
         {
-            _logger.LogInformation("Adding a new gift: {GiftName}", gift.Name);
-            var giftModel = _mapper.Map<GiftModel>(gift);
-
-            if (gift.DonorId != 0)
+            try
             {
-                giftModel.DonorId = gift.DonorId;
-                giftModel.Donor = null;
+                _logger.LogInformation("Adding a new gift: {GiftName}", gift.Name);
+
+                // ולידציה בסיסית למניעת שגיאת Truncated
+                if (gift.Name?.Length > 100) throw new ArgumentException("שם המתנה ארוך מדי (מקסימום 100 תווים)");
+
+                var giftModel = _mapper.Map<GiftModel>(gift);
+
+                if (gift.DonorId != 0)
+                {
+                    giftModel.DonorId = gift.DonorId;
+                    giftModel.Donor = null;
+                }
+
+                giftModel.WinnerId = null;
+                giftModel.Winner = null;
+
+                await giftDAL.Post(giftModel);
+                _logger.LogInformation("Gift {GiftName} added successfully.", gift.Name);
             }
-
-            giftModel.WinnerId = null;
-            giftModel.Winner = null;
-
-            await giftDAL.Post(giftModel);
-            _logger.LogInformation("Gift {GiftName} added successfully.", gift.Name);
+            catch (ArgumentException ex) { throw new Exception(ex.Message); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GiftBLL.Post");
+                throw new Exception("הוספת המתנה נכשלה. וודא שהנתונים תקינים.");
+            }
         }
 
         public async Task Update(int id, GiftDto gift)
         {
-            _logger.LogInformation("Updating gift with ID: {Id}", id);
-            var giftModel = _mapper.Map<GiftModel>(gift);
-            await giftDAL.Update(id, giftModel);
+            try
+            {
+                _logger.LogInformation("Updating gift with ID: {Id}", id);
+                var giftModel = _mapper.Map<GiftModel>(gift);
+                await giftDAL.Update(id, giftModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GiftBLL.Update: {Id}", id);
+                throw new Exception("עדכון המתנה נכשל.");
+            }
         }
 
         public async Task Delete(int id)
         {
-            _logger.LogInformation("Deleting gift with ID: {Id}", id);
-            await giftDAL.Delete(id);
+            try
+            {
+                _logger.LogInformation("Deleting gift with ID: {Id}", id);
+                await giftDAL.Delete(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GiftBLL.Delete: {Id}", id);
+                throw new Exception("מחיקת המתנה נכשלה. ייתכן שיש רכישות הקשורות למתנה זו.");
+            }
         }
 
         public async Task<GiftDto> GetByName(string name)
         {
-            _logger.LogInformation("Searching for gift by name: {Name}", name);
-            var giftModel = await giftDAL.GetByName(name);
-            return giftModel == null ? null : _mapper.Map<GiftDto>(giftModel);
+            try
+            {
+                _logger.LogInformation("Searching for gift by name: {Name}", name);
+                var giftModel = await giftDAL.GetByName(name);
+                return giftModel == null ? null : _mapper.Map<GiftDto>(giftModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GiftBLL.GetByName");
+                throw new Exception("שגיאה בחיפוש לפי שם.");
+            }
         }
 
         public async Task<GiftDto> GetByCategory(string category)
         {
-            _logger.LogInformation("Searching for gifts in category: {Category}", category);
-            var giftModel = await giftDAL.GetByCategory(category);
-            return giftModel == null ? null : _mapper.Map<GiftDto>(giftModel);
+            try
+            {
+                _logger.LogInformation("Searching for gifts in category: {Category}", category);
+                var giftModel = await giftDAL.GetByCategory(category);
+                return giftModel == null ? null : _mapper.Map<GiftDto>(giftModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GiftBLL.GetByCategory");
+                throw new Exception("שגיאה בחיפוש לפי קטגוריה.");
+            }
         }
 
         public async Task<List<GiftDto>> GetByDonor(string name)
         {
-            _logger.LogInformation("Searching for gifts by donor: {DonorName}", name);
-            var giftModels = await giftDAL.GetByDonor(name);
-
-            if (giftModels == null || !giftModels.Any())
+            try
             {
-                return new List<GiftDto>();
+                _logger.LogInformation("Searching for gifts by donor: {DonorName}", name);
+                var giftModels = await giftDAL.GetByDonor(name);
+                if (giftModels == null) return new List<GiftDto>();
+                return _mapper.Map<List<GiftDto>>(giftModels);
             }
-            return _mapper.Map<List<GiftDto>>(giftModels);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GiftBLL.GetByDonor");
+                throw new Exception("שגיאה בשליפת מתנות לפי תורם.");
+            }
         }
 
-        [HttpGet("by-purchases/{num}")]
         public async Task<List<GiftDto>> GetByPurchasesCount(int num)
         {
-            _logger.LogInformation("Searching for gifts with purchase count: {Num}", num);
-            var giftModels = await giftDAL.GetByPurchasesCount(num);
-
-            if (giftModels == null) return new List<GiftDto>();
-
-            return giftModels.Select(p => new GiftDto
+            try
             {
-                Id = p.Id,
-                Name = p.Name,
-                PriceCard = p.PriceCard,
-                DonorName = p.Donor != null ? $"{p.Donor.FirstName} {p.Donor.LastName}" : "ללא תורם",
-                Category = p.Category
-            }).ToList();
+                _logger.LogInformation("Searching for gifts with purchase count: {Num}", num);
+                var giftModels = await giftDAL.GetByPurchasesCount(num);
+                if (giftModels == null) return new List<GiftDto>();
+
+                return giftModels.Select(p => new GiftDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PriceCard = p.PriceCard,
+                    DonorName = p.Donor != null ? $"{p.Donor.FirstName} {p.Donor.LastName}" : "ללא תורם",
+                    Category = p.Category
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetByPurchasesCount");
+                throw new Exception("שגיאה בסינון לפי כמות רכישות.");
+            }
         }
 
         public async Task<List<CustomerDetailsDto>> GetByParches(int giftId)
         {
-            _logger.LogInformation("Fetching purchases for gift ID: {GiftId}", giftId);
-            var purchases = await _customerDetailsDAL.GetByGiftId(giftId);
-            return purchases.Select(p => new CustomerDetailsDto
+            try
             {
-                CustomerName = p.CustomerName,
-                Quntity = p.Quntity,
-            }).ToList();
+                var purchases = await _customerDetailsDAL.GetByGiftId(giftId);
+                return purchases.Select(p => new CustomerDetailsDto
+                {
+                    CustomerName = p.CustomerName,
+                    Quntity = p.Quntity,
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetByParches for GiftId: {Id}", giftId);
+                throw new Exception("שגיאה בשליפת רשימת רוכשים.");
+            }
         }
 
         public async Task<List<GiftDto>> giftExpensive()
         {
-            _logger.LogInformation("Fetching all gifts sorted by price (Expensive first).");
-            var giftsList = await giftDAL.giftExpensive();
-
-            if (giftsList == null)
+            try
             {
-                return new List<GiftDto>();
+                var giftsList = await giftDAL.giftExpensive();
+                return giftsList == null ? new List<GiftDto>() : _mapper.Map<List<GiftDto>>(giftsList);
             }
-
-            return _mapper.Map<List<GiftDto>>(giftsList);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in giftExpensive");
+                throw new Exception("שגיאה במיון המתנות היקרות.");
+            }
         }
 
         public async Task<GiftDto> byMostParches()
         {
-            _logger.LogInformation("Fetching gift with most purchases.");
-            var giftModel = await giftDAL.byMostParches();
-            return giftModel == null ? null : _mapper.Map<GiftDto>(giftModel);
+            try
+            {
+                var giftModel = await giftDAL.byMostParches();
+                return giftModel == null ? null : _mapper.Map<GiftDto>(giftModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in byMostParches");
+                throw new Exception("שגיאה בשליפת המתנה הפופולרית ביותר.");
+            }
         }
 
         public async Task<WinnerDTO> Winner(int giftId)
         {
-            _logger.LogInformation("Starting lottery process for gift ID: {GiftId}", giftId);
-            var gift = await giftDAL.Winner(giftId);
-
-            var confirmedPurchases = gift?.customerDatails
-                .Where(d => d.Status == "Confirmed")
-                .ToList();
-
-            if (gift == null || confirmedPurchases == null || !confirmedPurchases.Any() || gift.WinnerId != null)
-            {
-                _logger.LogWarning("Lottery failed for gift ID {GiftId}.", giftId);
-                return null;
-            }
-
-            var random = new Random();
-            var winningPurchase = confirmedPurchases[random.Next(confirmedPurchases.Count)];
-            var winner = winningPurchase.customer;
-
-            _logger.LogInformation("Winner selected: {WinnerName} for gift {GiftName}", winner.FirstName, gift.Name);
-
-            gift.WinnerId = winner.Id;
-            gift.Winner = null;
-
-            await giftDAL.Update(gift.Id, gift);
-            gift.Winner = winner;
-
             try
             {
-                _logger.LogInformation("Attempting to send winner email to: {Email}", winner.Email);
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("מערכת הגרלות", "talyatoledano10@gmail.com"));
-                message.To.Add(new MailboxAddress(winner.FirstName, winner.Email));
-                message.Subject = "מזל טוב! זכית בפרס";
+                _logger.LogInformation("Starting lottery process for gift ID: {GiftId}", giftId);
+                var gift = await giftDAL.Winner(giftId);
 
-                var bodyBuilder = new BodyBuilder
-                {
-                    HtmlBody = $@"
-            <div dir='rtl' style='font-family: Arial;'>
-                <h2>שלום {winner.FirstName}!</h2>
-                <p>איזה כיף! הגרלנו עכשיו את הפרס <b>{gift.Name}</b> ואת/ה הזוכה!</p>
-                <p>ניצור איתך קשר בהקדם.</p>
-            </div>"
-                };
-                message.Body = bodyBuilder.ToMessageBody();
+                var confirmedPurchases = gift?.customerDatails?
+                    .Where(d => d.Status == "Confirmed")
+                    .ToList();
 
-                using (var client = new SmtpClient())
+                if (gift == null || confirmedPurchases == null || !confirmedPurchases.Any() || gift.WinnerId != null)
                 {
-                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync("talyatoledano10@gmail.com", "xcba vdpp dmaa dvls");
-                    await client.SendAsync(message);
-                    await client.DisconnectAsync(true);
+                    _logger.LogWarning("Lottery failed or already done for gift ID {GiftId}.", giftId);
+                    return null;
                 }
-                _logger.LogInformation("Email sent successfully to {Email}", winner.Email);
+
+                var random = new Random();
+                var winningPurchase = confirmedPurchases[random.Next(confirmedPurchases.Count)];
+                var winner = winningPurchase.customer;
+
+                _logger.LogInformation("Winner selected: {WinnerName} for gift {GiftName}", winner.FirstName, gift.Name);
+
+                gift.WinnerId = winner.Id;
+                gift.Winner = null;
+
+                await giftDAL.Update(gift.Id, gift);
+                gift.Winner = winner;
+
+                // לוגיקת אימייל - עטופה בנפרד כדי שהגרלה לא תיכשל אם המייל נכשל
+                try
+                {
+                    _logger.LogInformation("Attempting to send winner email to: {Email}", winner.Email);
+                    var message = new MimeMessage();
+                    message.From.Add(new MailboxAddress("מערכת הגרלות", "talyatoledano10@gmail.com"));
+                    message.To.Add(new MailboxAddress(winner.FirstName, winner.Email));
+                    message.Subject = "מזל טוב! זכית בפרס";
+
+                    var bodyBuilder = new BodyBuilder
+                    {
+                        HtmlBody = $@"<div dir='rtl'><h2>שלום {winner.FirstName}!</h2><p>זכית בפרס <b>{gift.Name}</b>!</p></div>"
+                    };
+                    message.Body = bodyBuilder.ToMessageBody();
+
+                    using (var client = new SmtpClient())
+                    {
+                        await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                        await client.AuthenticateAsync("talyatoledano10@gmail.com", "xcba vdpp dmaa dvls");
+                        await client.SendAsync(message);
+                        await client.DisconnectAsync(true);
+                    }
+                }
+                catch (Exception mailEx)
+                {
+                    _logger.LogError(mailEx, "Email sending failed, but winner was saved.");
+                }
+
+                return _mapper.Map<WinnerDTO>(gift);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send winner email for gift {GiftId}", giftId);
+                _logger.LogError(ex, "Error in Lottery (Winner method) for GiftId: {Id}", giftId);
+                throw new Exception("ביצוע ההגרלה נכשל.");
             }
-
-            return _mapper.Map<WinnerDTO>(gift);
         }
+
         public async Task<List<GiftDto>> reportWinners()
         {
-            _logger.LogInformation("Generating winners report.");
-            var giftFromDb = await giftDAL.reportWinners();
-            return _mapper.Map<List<GiftDto>>(giftFromDb);
+            try
+            {
+                var giftFromDb = await giftDAL.reportWinners();
+                return _mapper.Map<List<GiftDto>>(giftFromDb);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in reportWinners");
+                throw new Exception("שגיאה בהפקת דו\"ח זוכים.");
+            }
         }
 
         Task<List<CustomerDetailsDto>> IgiftBLL.GetByCategory(string category)
@@ -244,8 +342,15 @@ namespace WebApplication1.BLL
 
         public async Task<int> reportAchnasot()
         {
-            _logger.LogInformation("Generating achnasot report.");
-            return await this.giftDAL.reportAchnasot();
+            try
+            {
+                return await this.giftDAL.reportAchnasot();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in reportAchnasot");
+                throw new Exception("שגיאה בהפקת דו\"ח הכנסות.");
+            }
         }
     }
 }

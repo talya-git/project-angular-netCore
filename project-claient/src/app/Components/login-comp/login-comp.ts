@@ -3,8 +3,7 @@ import { AuthService } from 'src/app/Services/auth-service';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-
-// ייבוא רכיבי Angular Material
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -13,15 +12,17 @@ import { MatButtonModule } from '@angular/material/button';
 @Component({
   selector: 'app-login-comp',
   standalone: true, 
-  // הוספת המודולים של Material לכאן
   imports: [
+    
+    MatSnackBarModule,
     ReactiveFormsModule, 
     CommonModule, 
     RouterLink,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    
   ], 
   templateUrl: './login-comp.html',
   styleUrl: './login-comp.scss',
@@ -50,28 +51,24 @@ export class LoginComp implements OnInit {
   }
 
   login(userName: string, password: string) {
-    this.authSrv.Login(userName, password).subscribe({
-      next: (data: any) => {
-        // חילוץ נתונים עם הגנה ממקרים של Null/Undefined
-        const token = data?.token || data?.Token;
-        const role = data?.role || data?.Role;
-        const name = data?.firstName || data?.FirstName || userName;
+  this.authSrv.Login(userName, password).subscribe({
+    next: (data: any) => {
+      if (data && data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userRole', data.role || 'user');
+        localStorage.setItem('userName', data.userName || userName);
 
-        if (token) {
-          localStorage.setItem('token', token);
-          localStorage.setItem('userRole', role || 'User');
-          localStorage.setItem('userName', name);
-
-          alert(`שלום ${name}, התחברת בהצלחה!`);
-          this.router.navigate(['/home']); 
-        } else {
-          alert("שגיאה: לא התקבל טוקן מהשרת");
-        }
-      },
-      error: (err) => {
-        console.error("Login Error:", err);
-        alert("שם משתמש או סיסמה שגויים");
+        alert(`שלום ${data.userName || userName}, התחברת בהצלחה!`);
+        this.router.navigate(['/home']); 
+      } else {
+        alert("התחברות הצליחה אך חסרים נתוני גישה. פני למנהל המערכת.");
       }
-    });
-  }
+    },
+    error: (err) => {
+      const serverMessage = err.error?.message || "אירעה שגיאה בהתחברות. נסו שוב מאוחר יותר.";
+      alert(serverMessage); 
+      console.error("Login Error Details:", err);
+    }
+  });
+}
 }

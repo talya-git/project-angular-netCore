@@ -47,7 +47,7 @@ showAddForm:Boolean=true;
     console.log("Is Admin Check:", this.authSrv.isAdmin());
   console.log("Role in Storage:", localStorage.getItem('userRole'));
     if (c['id'] && this.id > 0) {
-      this.showAddForm = true; // <--- זה מה שפותח את החלון!
+      this.showAddForm = true; 
       this.giftSrv.getById(this.id).subscribe((giftFromServer) => {
         if (giftFromServer) {
           this.frmGift.patchValue(giftFromServer);
@@ -63,31 +63,49 @@ showAddForm:Boolean=true;
   }
 
   addGift() {
-    const gift: giftModel = this.frmGift.value;
-   if (!this.authSrv.isAdmin()) {
+  if (!this.authSrv.isAdmin()) {
     alert('אינך מורשה לבצע פעולה זו!');
     return;
   }
-  const giftData = { ...this.frmGift.value };
-    if (this.id <= 0) {
-      this.giftSrv.add(gift).subscribe(() => {
-        alert('המתנה נוספה בהצלחה!');
-this.router.navigate(['/home']);
-        this.giftSrv.refreshList$.next();
-        this.frmGift.reset({ id: 0 }); 
-      });
-    } else {
-      this.giftSrv.update(gift).subscribe(() => {
-        alert('המתנה עודכנה בהצלחה!');
-        this.giftSrv.refreshList$.next(); 
-        this.id = -1;
-        this.frmGift.reset({ id: 0 });
-      });
-    }
+
+  const gift: giftModel = this.frmGift.value;
+
+  if (this.id <= 0) {
+    this.giftSrv.add(gift).subscribe({
+      next: (res: any) => {
+        alert(res.message || 'המתנה נוספה בהצלחה!');
+        this.afterSaveActions();
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'שגיאה בהוספת המתנה';
+        alert(msg);
+        console.error("Add Gift Error:", err);
+      }
+    });
+  } else {
+    this.giftSrv.update(gift).subscribe({
+      next: (res: any) => {
+        alert(res.message || 'המתנה עודכנה בהצלחה!');
+        this.afterSaveActions();
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'שגיאה בעדכון המתנה';
+        alert(msg);
+        console.error("Update Gift Error:", err);
+      }
+    });
   }
-  closeEdit() {
-    this.showAddForm = false;
-    this.id = -1; 
-    this.frmGift.reset({ id: 0 });
-  }
+}
+closeEdit() {
+  this.showAddForm = false;
+  this.id = -1; 
+  this.frmGift.reset({ id: 0 });
+}
+private afterSaveActions() {
+  this.giftSrv.refreshList$.next(); 
+  this.id = -1;
+  this.showAddForm = false;
+  this.frmGift.reset({ id: 0 });
+  this.router.navigate(['/home']);
+}
 }

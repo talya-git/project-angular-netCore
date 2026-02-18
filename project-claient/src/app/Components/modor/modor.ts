@@ -56,30 +56,52 @@ export class modor {
     }
   }
 
-  addModor() {
-    // בדיקת הרשאה לפני שליחה
-    if (!this.authSrv.isAdmin()) {
-      alert('אין לך הרשאה לביצוע פעולה זו');
-      return;
-    }
-
-    if (this.frmModor.invalid) {
-      this.frmModor.markAllAsTouched();
-      return;
-    }
-
-    const donorToSave = this.frmModor.value;
-
-    if (this.id <= 0) {
-      this.modorSrv.add(donorToSave).subscribe(() => {
-        alert('נוסף בהצלחה');
-        this.modorSrv.refreshList$.next();
-      });
-    } else {
-      this.modorSrv.update(donorToSave).subscribe(() => {
-        alert('עודכן בהצלחה');
-        this.modorSrv.refreshList$.next();
-      });
-    }
+ addModor() {
+  if (!this.authSrv.isAdmin()) {
+    alert('אין לך הרשאה לביצוע פעולה זו');
+    return;
   }
+
+  if (this.frmModor.invalid) {
+    this.frmModor.markAllAsTouched();
+    alert('נא למלא את כל השדות בצורה תקינה');
+    return;
+  }
+
+  const donorToSave = { ...this.frmModor.value };
+
+  if (this.id <= 0) {
+    donorToSave.id = 0; 
+
+    this.modorSrv.add(donorToSave).subscribe({
+      next: (res: any) => {
+        alert(res.message || 'התורם נוסף בהצלחה');
+        this.resetAfterAction();
+      },
+      error: (err) => {
+        const errorMsg = err.error?.message || 'שגיאה בהוספת התורם';
+        alert(errorMsg);
+        console.error("Add Donor error:", err);
+      }
+    });
+  } else {
+    this.modorSrv.update(donorToSave).subscribe({
+      next: (res: any) => {
+        alert(res.message || 'התורם עודכן בהצלחה');
+        this.resetAfterAction();
+      },
+      error: (err) => {
+        const errorMsg = err.error?.message || 'שגיאה בעדכון התורם';
+        alert(errorMsg);
+        console.error("Update Donor error:", err);
+      }
+    });
+  }
+}
+
+private resetAfterAction() {
+  this.modorSrv.refreshList$.next();
+  this.frmModor.reset({ id: 0 });
+  this.id = -1; 
+}
 }

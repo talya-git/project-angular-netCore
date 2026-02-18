@@ -43,7 +43,6 @@ export class ListModor implements OnInit {
   degel: number = 0;
 
   ngOnInit() {
-    // טעינת נתונים רק אם המשתמש מנהל
     if (this.authSrv.isAdmin()) {
       this.getAll(); 
 
@@ -56,7 +55,7 @@ export class ListModor implements OnInit {
   }
 
   getAll() {
-    if (!this.authSrv.isAdmin()) return; // הגנת הרשאה
+    if (!this.authSrv.isAdmin()) return; 
     this.modorSrv.getAll().subscribe((data) => {
       this.arrModor = data;
     });
@@ -94,7 +93,6 @@ export class ListModor implements OnInit {
     this.donor = null;
   }
 
-  // פונקציות חיפוש מוגנות
   getByName(name: string) {
     if (!this.authSrv.isAdmin()) return;
     this.modorSrv.getByName(name).subscribe((res) => {

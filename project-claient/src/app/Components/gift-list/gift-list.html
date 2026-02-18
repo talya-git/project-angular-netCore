@@ -5,40 +5,45 @@
     <div class="divider"></div>
   </div>
 
-  <div class="luxury-filter-bar">
-    <div class="filter-group">
-      
-      <mat-form-field appearance="outline" class="modern-field compact">
-        <mat-icon matPrefix>search</mat-icon>
-        <mat-label>חפש מתנה</mat-label>
-        <input matInput [(ngModel)]="filterName" (input)="getByName(filterName)" placeholder="הכנס שם...">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="modern-field compact">
-        <mat-icon matPrefix>person_search</mat-icon>
-        <mat-label>שם תורם</mat-label>
-        <input matInput [(ngModel)]="filterDonor" (change)="getByDonor(filterDonor)" placeholder="חפש תורם...">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="modern-field compact">
-        <mat-icon matPrefix>analytics</mat-icon>
-        <mat-label>מינימום רכישות</mat-label>
-        <input matInput type="number" [(ngModel)]="filterCount" (change)="GetByPurchasesCount(filterCount)">
-      </mat-form-field>
-
+<div class="luxury-filter-bar">
+  <div class="filter-main-group">
+    
+    <div class="search-item">
+      <span class="search-label">מה מחפשים?</span>
+      <div class="custom-input-wrapper">
+        <mat-icon>search</mat-icon>
+        <input type="text" [(ngModel)]="filterName" (input)="getByName(filterName)" placeholder="שם המתנה...">
+      </div>
     </div>
 
-    <div class="filter-actions">
-      <button mat-flat-button class="btn-sort" (click)="giftExpensive()">
-        <mat-icon>diamond</mat-icon>
-        הכי יקרות
-      </button>
-
-      <button mat-icon-button class="btn-refresh" (click)="loadAllGifts()" title="נקה הכל">
-        <mat-icon>refresh</mat-icon>
-      </button>
+    <div class="search-item">
+      <span class="search-label">תורם</span>
+      <div class="custom-input-wrapper">
+        <mat-icon>person_search</mat-icon>
+        <input type="text" [(ngModel)]="filterDonor" (change)="getByDonor(filterDonor)" placeholder="מי התורם?">
+      </div>
     </div>
+
+    <div class="search-item">
+      <span class="search-label">פופולריות</span>
+      <div class="custom-input-wrapper compact">
+        <mat-icon>analytics</mat-icon>
+        <input type="number" [(ngModel)]="filterCount" (change)="GetByPurchasesCount(filterCount)" placeholder="0">
+      </div>
+    </div>
+
   </div>
+
+  <div class="filter-actions-group">
+    <button mat-flat-button class="btn-expensive" (click)="giftExpensive()">
+      <mat-icon>diamond</mat-icon>
+      היוקרתיות ביותר
+    </button>
+    <button mat-icon-button class="btn-clear" (click)="loadAllGifts()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+</div>
 
   <div class="gifts-grid">
     <mat-card class="luxury-card-small" *ngFor="let g of arrGift">

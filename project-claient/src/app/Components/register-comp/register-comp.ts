@@ -34,7 +34,7 @@ export class RegisterComp implements OnInit {
       LastName: ['', [Validators.required]], 
       Phone: ['', [Validators.required]], 
       Email: ['', [Validators.required, Validators.email]],
-      Address: ['', [Validators.required]], // השדה חזר להיות חובה בטופס
+      Address: ['', [Validators.required]], 
       UserName: ['', [Validators.required, Validators.minLength(4)]],
       Password: ['', [Validators.required, Validators.minLength(6)]],
       Role: ['Customer'] 
@@ -50,16 +50,23 @@ export class RegisterComp implements OnInit {
     }
   }
 
-  register(customerData: any) {
-    this.authSrv.Register(customerData).subscribe({
-      next: (data: any) => {
-        alert("נרשמת בהצלחה! מעביר אותך לדף ההתחברות.");
-        this.router.navigate(['/login']); 
-      },
-      error: (err) => {
-        console.error("Register error:", err);
-        alert("ההרשמה נכשלה. בדקי שהנתונים תקינים.");
+register(customerData: any) {
+  this.authSrv.Register(customerData).subscribe({
+    next: (res: any) => {
+      alert(res.message || "נרשמת בהצלחה! מעביר אותך לדף ההתחברות.");
+      this.router.navigate(['/login']); 
+    },
+    error: (err) => {
+      console.error("Register error:", err);
+      
+      const serverErrorMessage = err.error?.message;
+      
+      if (serverErrorMessage) {
+        alert(serverErrorMessage); 
+      } else {
+        alert("אופס! נראה שיש תקלה בתקשורת עם השרת.");
       }
-    });
-  }
+    }
+  });
+}
 }

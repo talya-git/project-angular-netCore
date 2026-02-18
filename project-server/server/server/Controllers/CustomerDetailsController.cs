@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using WebApplication1.DAL;
 using WebApplication1.DTOs;
 using WebApplication1.Models;
+using System; // נחוץ עבור Exception
 
 [ApiController]
 [Route("api/[controller]")]
@@ -15,7 +16,8 @@ public class CustomerDetailsController : ControllerBase
 {
     private readonly ICustomerDatailsBLL _customerBll;
     private readonly ILogger<CustomerDetailsController> _logger;
-    private readonly LotteryContext _context; 
+    private readonly LotteryContext _context;
+
     public CustomerDetailsController(ICustomerDatailsBLL bll, ILogger<CustomerDetailsController> logger, LotteryContext context)
     {
         _customerBll = bll;
@@ -25,93 +27,148 @@ public class CustomerDetailsController : ControllerBase
 
     [Authorize(Roles = "manager")]
     [HttpGet("all")]
-    public async Task<List<CustomerDetailsDto>> Get()
+    public async Task<IActionResult> Get()
     {
-        _logger.LogInformation("API: Fetching all customer details.");
-        return await this._customerBll.Get();
+        try
+        {
+            _logger.LogInformation("API: Fetching all customer details.");
+            var result = await this._customerBll.Get();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "manager")]
     [HttpGet("by-gift/{giftId}")]
-    public async Task<List<CustomerDetailsDto>> GetByGiftId(int giftId)
+    public async Task<IActionResult> GetByGiftId(int giftId)
     {
-        _logger.LogInformation("API: GetByGift called for GiftId: {GiftId}", giftId);
-        return await this._customerBll.GetByGiftId(giftId);
+        try
+        {
+            _logger.LogInformation("API: GetByGift called for GiftId: {GiftId}", giftId);
+            var result = await this._customerBll.GetByGiftId(giftId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
-    [Authorize(Roles = "user")]
-    [HttpPost]
     [Authorize(Roles = "user")]
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] CustomerDetailsDto model)
     {
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-        if (userIdClaim == null) return Unauthorized();
+        try
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized(new { message = "משתמש לא מחובר" });
 
-        model.CustomerId = int.Parse(userIdClaim.Value);
+            model.CustomerId = int.Parse(userIdClaim.Value);
 
-        await _customerBll.Add(model);
-        return Ok();
+            await _customerBll.Add(model);
+            return Ok(new { message = "הרכישה נוספה בהצלחה!" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding purchase for model");
+            // כאן נתפסת שגיאת ה-Truncated ונשלחת לאנגולר כהודעה ברורה
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "manager")]
     [HttpGet("reportRevenue")]
-    public async Task<double> reportRevenue()
+    public async Task<ActionResult<double>> reportRevenue()
     {
-        _logger.LogInformation("API: Revenue report requested.");
-        double revenue = await _customerBll.reportRevenue();
-
-        _logger.LogInformation("API: Revenue report calculated: {Revenue}", revenue);
-        return revenue;
+        try
+        {
+            _logger.LogInformation("API: Revenue report requested.");
+            double revenue = await _customerBll.reportRevenue();
+            return Ok(revenue);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "user")]
     [HttpGet("ConfirmPurchase")]
     public async Task<IActionResult> ConfirmPurchase([FromQuery] int id)
     {
-        _logger.LogInformation("API: Confirming purchase for ID: {Id}", id);
-        await _customerBll.ConfirmPurchase(id);
-        return Ok();
+        try
+        {
+            _logger.LogInformation("API: Confirming purchase for ID: {Id}", id);
+            await _customerBll.ConfirmPurchase(id);
+            return Ok(new { message = "הרכישה אושרה" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "user")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        _logger.LogInformation("API: Deleting donor ID: {Id}", id);
-        await _customerBll.Delete(id);
-        return Ok();
+        try
+        {
+            _logger.LogInformation("API: Deleting donor ID: {Id}", id);
+            await _customerBll.Delete(id);
+            return Ok(new { message = "המחיקה בוצעה" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
+
     [Authorize(Roles = "user")]
     [HttpGet("GetMyPurchases")]
     public async Task<IActionResult> GetMyPurchases()
     {
-        var userName = User.Identity?.Name;
-        if (string.IsNullOrEmpty(userName)) return Unauthorized();
+        try
+        {
+            var userName = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userName)) return Unauthorized();
 
-        var customer = await _context.Customers
-                                     .FirstOrDefaultAsync(c => c.UserName.Trim() == userName.Trim());
+            var customer = await _context.Customers
+                                         .FirstOrDefaultAsync(c => c.UserName.Trim() == userName.Trim());
 
-        _logger.LogInformation("Search for user: '{UserName}', Found ID: {Id}", userName, customer?.Id);
+            if (customer == null) return NotFound(new { message = "הלקוח לא נמצא במערכת" });
 
-        if (customer == null) return NotFound("Customer not found in DB");
-
-        var results = await _customerBll.GetByCustomerId(customer.Id);
-        return Ok(results);
+            var results = await _customerBll.GetByCustomerId(customer.Id);
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "user")]
     [HttpGet("GetTotalAmount")]
     public async Task<ActionResult<double>> GetTotalAmount()
     {
-        var userName = User.Identity?.Name;
-        if (string.IsNullOrEmpty(userName)) return Unauthorized();
+        try
+        {
+            var userName = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userName)) return Unauthorized();
 
-        var customer = await _context.Customers
-                                     .FirstOrDefaultAsync(c => c.UserName.Trim() == userName.Trim());
+            var customer = await _context.Customers
+                                         .FirstOrDefaultAsync(c => c.UserName.Trim() == userName.Trim());
 
-        if (customer == null) return Ok(0.0); 
-        double total = await _customerBll.GetTotalAmount(customer.Id);
-        return Ok(total);
+            if (customer == null) return Ok(0.0);
+            double total = await _customerBll.GetTotalAmount(customer.Id);
+            return Ok(total);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

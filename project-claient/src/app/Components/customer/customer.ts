@@ -60,8 +60,6 @@ addCustomer(){
     castomer.password = this.frmCostomer.controls['password'].value;
     castomer.userName = this.frmCostomer.controls['userName'].value;
 
-
-
     if(castomer.id == 0) {
     
         this.castomerSrv.register(castomer).subscribe(res => {

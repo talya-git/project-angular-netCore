@@ -23,9 +23,27 @@ public class AuthBLL : IAuthBLL
     {
         _logger.LogInformation("Registering user: {UserName}", customerModel.UserName);
 
+        if (customerModel.UserName.Length > 50)
+            throw new ArgumentException("שם משתמש ארוך מדי (מקסימום 50 תווים)");
+
+        if (string.IsNullOrEmpty(customerModel.Password) || customerModel.Password.Length < 6)
+            throw new ArgumentException("הסיסמה חייבת להכיל לפחות 6 תווים");
+
         customerModel.Password = BCrypt.Net.BCrypt.HashPassword(customerModel.Password);
 
-        await authDAL.Register(customerModel);
+
+        if (customerModel.Password.Length > 100)
+            _logger.LogWarning("The hashed password is very long: {Length}", customerModel.Password.Length);
+
+        try
+        {
+            await authDAL.Register(customerModel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while saving user to DB");
+            throw; 
+        }
     }
 
     public async Task<AuthDTO> Login(string userName, string password)

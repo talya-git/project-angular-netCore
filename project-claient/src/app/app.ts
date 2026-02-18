@@ -2,12 +2,10 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'; // הוספנו RouterLinkActive לסימון דף פעיל
 import { CommonModule } from '@angular/common';
 
-// רכיבי הפרויקט שלך
 import { GiftList } from './Components/gift-list/gift-list';
 import { ListModor } from './Components/list-modor/list-modor';
 import { ListCustomer } from './Components/list-customer/list-customer';
 
-// Angular Material - פותר את השגיאות של ה-Navbar
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';   // חשוב! פותר את ה-mat-icon
@@ -21,7 +19,7 @@ import { AuthService } from './Services/auth-service';
     CommonModule,
     RouterOutlet, 
     RouterLink, 
-    RouterLinkActive, // מאפשר עיצוב קישור פעיל ב-Navbar
+    RouterLinkActive,
     GiftList, 
     ListModor, 
     ListCustomer, 

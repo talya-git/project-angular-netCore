@@ -12,9 +12,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   selector: 'app-list-customer',
   standalone: true,
   imports: [CommonModule,
-    MatTableModule,   // עבור הטבלה
-    MatIconModule,    // עבור האייקונים
-    MatButtonModule,  // עבור הכפתורים
+    MatTableModule,  
+    MatIconModule,   
+    MatButtonModule, 
     MatTooltipModule
   ],
   templateUrl: './list-customer.html',
@@ -24,7 +24,6 @@ export class ListCustomer implements OnInit {
   customerSrv = inject(CustomerService);
   public authSrv = inject(AuthService);
 
-  // שינוי שם המערך לזה שמופיע ב-HTML
   arrModor: customerModel[] = []; 
   degel: number = 0;
   selectedId: number = -1;

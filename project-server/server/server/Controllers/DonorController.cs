@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using WebApplication1.BLL.Interfaces;
 using WebApplication1.DTOs;
 using WebApplication1.Models;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+using System; // הוספתי עבור Exception
 
 [Authorize(Roles = "manager")]
 [ApiController]
@@ -22,113 +23,159 @@ public class DonorController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<DonorDto>>> Get()
+    public async Task<IActionResult> Get()
     {
-        _logger.LogInformation("API: Requesting all donors.");
-        var result = await this.donorBLL.Get();
-        return Ok(result);
+        try
+        {
+            _logger.LogInformation("API: Requesting all donors.");
+            var result = await this.donorBLL.Get();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<DonorDto>> GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
-        _logger.LogInformation("API: Requesting donor by ID: {Id}", id);
-        var donor = await donorBLL.GetById(id);
-
-        if (donor == null)
+        try
         {
-            _logger.LogWarning("API: Donor with ID {Id} not found.", id);
-            return NotFound();
-        }
+            _logger.LogInformation("API: Requesting donor by ID: {Id}", id);
+            var donor = await donorBLL.GetById(id);
 
-        return Ok(donor);
+            if (donor == null)
+            {
+                _logger.LogWarning("API: Donor with ID {Id} not found.", id);
+                return NotFound(new { message = "תורם לא נמצא" });
+            }
+
+            return Ok(donor);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] DonorDto donor)
     {
-        if (donor == null) return BadRequest();
+        if (donor == null) return BadRequest(new { message = "לא התקבלו נתונים" });
 
-        if (donor.Id == 0)
+        try
         {
-            _logger.LogInformation("API: Adding a new donor.");
-            await this.donorBLL.Post(donor);
-        }
-        else
-        {
-            _logger.LogInformation("API: Updating existing donor with ID: {Id}", donor.Id);
-            var donorDto = new DonorDto
+            if (donor.Id == 0)
             {
-                Id = donor.Id,
-                FirstName = donor.FirstName,
-                LastName = donor.LastName,
-                Phone = donor.Phone,
-                Email = donor.Email,
-                Address = donor.Address,
-            };
-            await this.donorBLL.Update(donor.Id, donorDto);
+                _logger.LogInformation("API: Adding a new donor.");
+                await this.donorBLL.Post(donor);
+            }
+            else
+            {
+                _logger.LogInformation("API: Updating existing donor with ID: {Id}", donor.Id);
+                // שמרתי על הלוגיקה המקורית שלך של יצירת ה-DTO
+                var donorDto = new DonorDto
+                {
+                    Id = donor.Id,
+                    FirstName = donor.FirstName,
+                    LastName = donor.LastName,
+                    Phone = donor.Phone,
+                    Email = donor.Email,
+                    Address = donor.Address,
+                };
+                await this.donorBLL.Update(donor.Id, donorDto);
+            }
+            return Ok(new { message = "הפעולה בוצעה בהצלחה" });
         }
-        return Ok();
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "API Error: Post/Update donor failed.");
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] DonorDto donor)
     {
-        _logger.LogInformation("API: Updating donor ID: {Id}", id);
-        await donorBLL.Update(id, donor);
-        return Ok();
+        try
+        {
+            _logger.LogInformation("API: Updating donor ID: {Id}", id);
+            await donorBLL.Update(id, donor);
+            return Ok(new { message = "העדכון בוצע בהצלחה" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        _logger.LogInformation("API: Deleting donor ID: {Id}", id);
-        await donorBLL.Delete(id);
-        return Ok();
+        try
+        {
+            _logger.LogInformation("API: Deleting donor ID: {Id}", id);
+            await donorBLL.Delete(id);
+            return Ok(new { message = "התורם נמחק בהצלחה" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("by-email")]
-    public async Task<ActionResult<DonorDto>> GetByEmail([FromQuery] string email)
+    public async Task<IActionResult> GetByEmail([FromQuery] string email)
     {
-        _logger.LogInformation("API: Searching donor by email: {Email}", email);
-        var donor = await donorBLL.GetByEmail(email);
-
-        if (donor == null)
+        try
         {
-            _logger.LogWarning("API: Donor with email {Email} not found.", email);
-            return NotFound();
-        }
+            _logger.LogInformation("API: Searching donor by email: {Email}", email);
+            var donor = await donorBLL.GetByEmail(email);
 
-        return Ok(donor);
+            if (donor == null) return NotFound(new { message = "לא נמצא תורם עם אימייל זה" });
+
+            return Ok(donor);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("by-name")]
-    public async Task<ActionResult<DonorDto>> GetByName([FromQuery] string name)
+    public async Task<IActionResult> GetByName([FromQuery] string name)
     {
-        _logger.LogInformation("API: Searching donor by name: {Name}", name);
-        var donor = await donorBLL.GetByName(name);
-
-        if (donor == null)
+        try
         {
-            _logger.LogWarning("API: Donor with name {Name} not found.", name);
-            return NotFound();
-        }
+            _logger.LogInformation("API: Searching donor by name: {Name}", name);
+            var donor = await donorBLL.GetByName(name);
 
-        return Ok(donor);
+            if (donor == null) return NotFound(new { message = "לא נמצא תורם בשם זה" });
+
+            return Ok(donor);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("by-gift")]
-    public async Task<ActionResult<List<DonorDto>>> GetByGift([FromQuery] string name)
+    public async Task<IActionResult> GetByGift([FromQuery] string name)
     {
-        _logger.LogInformation("API: Searching donor for gift ID: {Id}", name);
-        var donor = await donorBLL.GetByGift(name);
-
-        if (donor == null)
+        try
         {
-            _logger.LogWarning("API: No donor found for gift ID: {Id}", name);
-            return NotFound();
-        }
+            _logger.LogInformation("API: Searching donor for gift ID: {Id}", name);
+            var donor = await donorBLL.GetByGift(name);
 
-        return Ok(donor);
+            if (donor == null) return NotFound(new { message = "לא נמצאו תורמים למתנה זו" });
+
+            return Ok(donor);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
