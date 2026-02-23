@@ -39,21 +39,29 @@
 
 .nav-links {
   display: flex;
-  gap: 10px;
+  gap: 4px; /* צמצום הרווח בין הלחצנים */
   align-items: center;
+  flex-wrap: nowrap; /* מבטיח שכולם יישארו בשורה אחת בלבד */
 
   a {
     text-decoration: none;
     color: #555;
     font-weight: 500;
-    padding: 10px 15px;
-    border-radius: 12px;
+    font-size: 0.85rem; /* הקטנת גודל הטקסט */
+    padding: 6px 10px; /* צמצום הריווח הפנימי של הלחצן */
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px; /* רווח מינימלי בין האייקון לטקסט */
     transition: all 0.3s ease;
+    white-space: nowrap;
 
-    mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    mat-icon { 
+      font-size: 16px; /* הקטנת האייקון */
+      width: 16px; 
+      height: 16px; 
+      flex-shrink: 0;
+    }
 
     &:hover {
       background: rgba(197, 160, 89, 0.1);
@@ -63,11 +71,10 @@
     &.active-link {
       background: #c5a059;
       color: white;
-      box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+      box-shadow: 0 3px 10px rgba(197, 160, 89, 0.2);
     }
   }
 }
-
 .user-actions {
   display: flex;
   gap: 12px;

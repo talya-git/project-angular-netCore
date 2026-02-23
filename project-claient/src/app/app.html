@@ -11,7 +11,9 @@
       <a routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
         <mat-icon>home</mat-icon> דף הבית
       </a>
-
+    <a routerLink="/about" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+       <mat-icon>info</mat-icon> אודות</a>
+       
       @if(authSrv.isAdmin()) {
         <a routerLink="/add-gift" routerLinkActive="active-link">
           <mat-icon>add_circle</mat-icon> ניהול מתנות

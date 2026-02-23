@@ -9,8 +9,10 @@ import { CustomerDetails } from './Components/customer-details/customer-details'
 import { ReportWinnersComp } from './Components/report-winners-comp/report-winners-comp';
 import { RegisterComp } from './Components/register-comp/register-comp';
 import { LoginComp } from './Components/login-comp/login-comp';
+import { About } from './Components/about/about';
 export const routes: Routes = [
 {path: 'home', component: GiftList},
+{path: 'about' , component:About },
 {path: 'add-gift' , component:Gift },
 {path: 'donor-list',component:ListModor},
 {path:'add-donor',component:modor},

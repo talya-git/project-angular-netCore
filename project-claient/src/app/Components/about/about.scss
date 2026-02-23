@@ -1,0 +1,65 @@
+/* עיצוב שם האתר - בדיוק כפי שהיה */
+.brand-name {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #001f3f;
+  text-align: center; /* השם נשאר במרכז */
+  margin-bottom: 5px;
+}
+.gold-text { color: #c5a059; }
+.divider { width: 60px; height: 4px; background: #c5a059; margin: 15px auto; }
+
+/* כרטיס אודות - מוצמד לימין */
+.info-hero-card {
+  background: #ffffff;
+  border-right: 5px solid #c5a059;
+  padding: 40px;
+  margin: 0 auto 50px;
+  max-width: 900px;
+  box-shadow: 0 10px 40px rgba(0, 31, 63, 0.05);
+  border-radius: 4px 20px 20px 4px;
+  direction: rtl; /* כיוון מימין לשמאל */
+}
+
+.info-title {
+  color: #001f3f;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  text-align: right; /* כותרת האודות לימין */
+}
+
+.info-description {
+  color: #475569;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 35px;
+  text-align: right; /* טקסט האודות לימין */
+}
+
+.contact-footer {
+  display: flex;
+  justify-content: flex-start; /* פרטי הקשר מתחילים מימין */
+  border-top: 1px solid #f1f5f9;
+  padding-top: 25px;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: right;
+}
+
+.contact-label {
+  font-size: 0.75rem;
+  color: #c5a059;
+  font-weight: 900;
+}
+
+.contact-value {
+  color: #001f3f;
+  font-weight: 700;
+}
