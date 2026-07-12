@@ -13,7 +13,7 @@
       "primeng/*": ["node_modules/primeng/*"],
       "@primeuix/themes/*": ["node_modules/@primeuix/themes/*"]
     },
-    "ignoreDeprecations": "5.0",
+    "ignoreDeprecations": "6.0",
     "types": []
   },
   "include": [
