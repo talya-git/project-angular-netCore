@@ -1,6 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { modorModel } from '../Models/modorModel';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 
 @Injectable({
@@ -8,41 +7,28 @@ import { Observable, Subject } from 'rxjs';
 })
 export class ModorService {
   private http = inject(HttpClient);
-  private readonly apiUrl = "https://localhost:7289/api/Donor";
-public refreshList$ = new Subject<void>();
-  getAll(): Observable<modorModel[]> {
-    return this.http.get<modorModel[]>(this.apiUrl);
+  // שינוי הפורט ל-5000 והפנייה לקונטרולר של התורמים (Donors/Modor)
+  private readonly apiUrl = 'http://localhost:5000/api/Donor';
+  public refreshList$ = new Subject<void>();
+
+  getAll(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
   }
 
-  add(m: modorModel): Observable<modorModel> {
-    return this.http.post<modorModel>(this.apiUrl, m);
+  add(m: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, m);
   }
 
   remove(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  getById(id: number): Observable<modorModel> {
-    return this.http.get<modorModel>(`${this.apiUrl}/${id}`);
+  getById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
-update(g: any): Observable<any> {
-  const id = g.Id || g.id; 
-  return this.http.put<any>(`${this.apiUrl}/${id}`, g);
+  update(g: any): Observable<any> {
+    const id = g.id || g.Id;
+    return this.http.put<any>(`${this.apiUrl}/${id}`, g);
+  }
 }
-getByName(name: string): Observable<modorModel> {
-  const params = new HttpParams().set('name', name);
-  
-  
-  return this.http.get<modorModel>(`${this.apiUrl}/by-name`, { params });
-}
-
-getByEmail(email: string): Observable<modorModel> {
-  const params = new HttpParams().set('email',email);
-  return this.http.get<modorModel>(`${this.apiUrl}/by-email`, { params });
-}
-getByGift(name: string): Observable<modorModel[]> {
-  const params = new HttpParams().set('name',name);
-  return this.http.get<modorModel[]>(`${this.apiUrl}/by-gift`, { params });
-}
- }

@@ -1,0 +1,25 @@
+{
+  "/api/Auth": {
+    "target": "http://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/api/Gift": {
+    "target": "http://localhost:5002",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/Gift": "/api/Gifts"
+    }
+  },
+  "/api/Inventory": {
+    "target": "http://localhost:5003",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/api/Order": {
+    "target": "http://localhost:5004",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

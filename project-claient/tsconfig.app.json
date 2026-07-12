@@ -1,14 +1,21 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
+    "rootDir": "./src",
     "baseUrl": "./",
+    "module": "esnext",
+    "target": "es2022",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "paths": {
+      "src/*": ["src/*"],
       "primeng/*": ["node_modules/primeng/*"],
       "@primeuix/themes/*": ["node_modules/@primeuix/themes/*"]
     },
     "types": []
   },
+  "ignoreDeprecations": "6.0",
   "include": [
     "src/**/*.ts"
   ],

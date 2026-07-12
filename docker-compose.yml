@@ -1,0 +1,83 @@
+services:
+  # 1. בסיס הנתונים המשותף לכל הקונטיינרים (אבל כל אחד פותח DB משלו בפנים!)
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: lottery_sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourSecurePassword123!
+    volumes:
+      - sql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "YourSecurePassword123!", "-Q", "SELECT 1", "-C"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # 2. שירות ה-Auth (רץ על פורט 5001)
+  auth-service:
+    image: auth-service
+    container_name: lottery_auth_service
+    build:
+      context: ./project-server/MicroServises/AuthService
+      dockerfile: Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  # 3. שירות ה-Gifts (רץ על פורט 5002)
+  gifts-service:
+    image: gifts-service
+    container_name: lottery_gifts_service
+    build:
+      context: ./project-server/MicroServises/GiftsService
+      dockerfile: Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  # 4. שירות ה-Inventory (רץ על פורט 5003)
+  inventory-service:
+    image: inventory-service
+    container_name: lottery_inventory_service
+    build:
+      context: ./project-server/MicroServises/InventoryService
+      dockerfile: Dockerfile
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  # 5. שירות ה-Orders (רץ על פורט 5004)
+  orders-service:
+    image: orders-service
+    container_name: lottery_orders_service
+    build:
+      context: ./project-server/MicroServises/OrdersService
+      dockerfile: Dockerfile
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      inventory-service:
+        condition: service_started
+
+volumes:
+  sql_data:

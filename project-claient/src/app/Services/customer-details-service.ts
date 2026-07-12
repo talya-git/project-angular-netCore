@@ -8,7 +8,7 @@ import { CustomerDetails } from '../Models/CustomerDetails';
 })
 export class CustomerDetailsService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'https://localhost:7289/api/CustomerDetails';
+private readonly apiUrl = 'http://localhost:5001/api/Auth';
   public refreshList$ = new Subject<void>();
 
 getDetailsByGiftId(giftId: number) {

@@ -8,7 +8,7 @@ import { Observable, Subject } from 'rxjs';
 })
 export class GiftService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'https://localhost:7289/api/Gift';
+private readonly apiUrl = '/api/Gift';
   public refreshList$ = new Subject<void>();
 
   getAll(): Observable<giftModel[]> {

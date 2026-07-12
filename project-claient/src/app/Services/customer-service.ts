@@ -8,9 +8,8 @@ import { Observable } from 'rxjs';
 })
 export class CustomerService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'https://localhost:7289/api/Customer';
-  private readonly apiUrl2 = 'https://localhost:7289/api/Auth/register';
-
+ private readonly apiUrl = 'http://localhost:5001/api/Auth';
+private readonly apiUrl2 = 'http://localhost:5001/api/Auth/register';
   getAll(): Observable<customerModel[]> {
     return this.http.get<customerModel[]>(this.apiUrl);
   }

@@ -22,7 +22,6 @@ import { BidiModule } from '@angular/cdk/bidi';
     MatIconModule,
     FormsModule,
     CommonModule,
-    MatChipsModule ,
     MatChipsModule,
     MatCardModule,       
     MatFormFieldModule,  
@@ -95,22 +94,25 @@ export class ListModor implements OnInit {
 
   getByName(name: string) {
     if (!this.authSrv.isAdmin()) return;
-    this.modorSrv.getByName(name).subscribe((res) => {
-      this.arrModor = res ? [res] : []; 
+    this.modorSrv.getAll().subscribe((res: any[]) => {
+      this.arrModor = res.filter(m => 
+        (m.firstName && m.firstName.includes(name)) || 
+        (m.lastName && m.lastName.includes(name))
+      );
     });
   }
 
   getByEmail(email: string) {
     if (!this.authSrv.isAdmin()) return;
-    this.modorSrv.getByEmail(email).subscribe((res) => {
-      this.arrModor = res ? [res] : []; 
+    this.modorSrv.getAll().subscribe((res: any[]) => {
+      this.arrModor = res.filter(m => m.email && m.email.includes(email));
     });
   }
 
   getByGift(gift: string) {
     if (!this.authSrv.isAdmin()) return;
-    this.modorSrv.getByGift(gift).subscribe((res) => {
-      this.arrModor = res ? res : []; 
+    this.modorSrv.getAll().subscribe((res: any[]) => {
+      this.arrModor = res.filter(m => m.giftId === gift || (m.gifts && m.gifts.includes(gift)));
     });
   }
 }
