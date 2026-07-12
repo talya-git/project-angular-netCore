@@ -4,20 +4,22 @@
     "secure": false,
     "changeOrigin": true
   },
-  "/api/Gift": {
+  "/api/Gifts": {
     "target": "http://localhost:5002",
     "secure": false,
-    "changeOrigin": true,
-    "pathRewrite": {
-      "^/api/Gift": "/api/Gifts"
-    }
+    "changeOrigin": true
+  },
+  "/api/Donor": {
+    "target": "http://localhost:5002",
+    "secure": false,
+    "changeOrigin": true
   },
   "/api/Inventory": {
     "target": "http://localhost:5003",
     "secure": false,
     "changeOrigin": true
   },
-  "/api/Order": {
+  "/api/Orders": {
     "target": "http://localhost:5004",
     "secure": false,
     "changeOrigin": true

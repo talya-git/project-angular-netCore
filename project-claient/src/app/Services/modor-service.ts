@@ -7,8 +7,7 @@ import { Observable, Subject } from 'rxjs';
 })
 export class ModorService {
   private http = inject(HttpClient);
-  // שינוי הפורט ל-5000 והפנייה לקונטרולר של התורמים (Donors/Modor)
-  private readonly apiUrl = 'http://localhost:5000/api/Donor';
+  private readonly apiUrl = '/api/Donor';
   public refreshList$ = new Subject<void>();
 
   getAll(): Observable<any[]> {

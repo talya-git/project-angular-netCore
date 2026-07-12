@@ -8,8 +8,8 @@ import { Observable } from 'rxjs';
 })
 export class CustomerService {
   private http = inject(HttpClient);
- private readonly apiUrl = 'http://localhost:5001/api/Auth';
-private readonly apiUrl2 = 'http://localhost:5001/api/Auth/register';
+  private readonly apiUrl = '/api/Auth';
+
   getAll(): Observable<customerModel[]> {
     return this.http.get<customerModel[]>(this.apiUrl);
   }
@@ -17,14 +17,14 @@ private readonly apiUrl2 = 'http://localhost:5001/api/Auth/register';
   getById(id: number): Observable<customerModel> {
     return this.http.get<customerModel>(`${this.apiUrl}/${id}`);
   }
+
   register(m: customerModel): Observable<customerModel> {
-    return this.http.post<customerModel>(this.apiUrl2, m);
+    return this.http.post<customerModel>(`${this.apiUrl}/register`, m);
   }
 
-    login(): Observable<customerModel[]> {
-    return this.http.get<customerModel[]>(this.apiUrl2);
+  login(): Observable<customerModel[]> {
+    return this.http.get<customerModel[]>(`${this.apiUrl}/register`);
   }
- 
 
   // remove(id: number): Observable<void> {
   //   return this.http.delete<void>(`${this.apiUrl}/${id}`);

@@ -1,5 +1,4 @@
 services:
-  # 1. בסיס הנתונים המשותף לכל הקונטיינרים (אבל כל אחד פותח DB משלו בפנים!)
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: lottery_sqlserver
@@ -17,7 +16,6 @@ services:
       retries: 10
       start_period: 30s
 
-  # 2. שירות ה-Auth (רץ על פורט 5001)
   auth-service:
     image: auth-service
     container_name: lottery_auth_service
@@ -28,11 +26,11 @@ services:
       - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthDb;User Id=sa;Password=YourSecurePassword123!;TrustServerCertificate=True;
     depends_on:
       sqlserver:
         condition: service_healthy
 
-  # 3. שירות ה-Gifts (רץ על פורט 5002)
   gifts-service:
     image: gifts-service
     container_name: lottery_gifts_service
@@ -43,11 +41,11 @@ services:
       - "5002:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=GiftsDb;User Id=sa;Password=YourSecurePassword123!;TrustServerCertificate=True;
     depends_on:
       sqlserver:
         condition: service_healthy
 
-  # 4. שירות ה-Inventory (רץ על פורט 5003)
   inventory-service:
     image: inventory-service
     container_name: lottery_inventory_service
@@ -58,11 +56,11 @@ services:
       - "5003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=InventoryDb;User Id=sa;Password=YourSecurePassword123!;TrustServerCertificate=True;
     depends_on:
       sqlserver:
         condition: service_healthy
 
-  # 5. שירות ה-Orders (רץ על פורט 5004)
   orders-service:
     image: orders-service
     container_name: lottery_orders_service
@@ -73,11 +71,25 @@ services:
       - "5004:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=OrdersDb;User Id=sa;Password=YourSecurePassword123!;TrustServerCertificate=True;
     depends_on:
       sqlserver:
         condition: service_healthy
       inventory-service:
         condition: service_started
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lottery_client
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - gifts-service
+      - inventory-service
+      - orders-service
 
 volumes:
   sql_data:

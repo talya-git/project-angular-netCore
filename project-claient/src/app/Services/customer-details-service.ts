@@ -8,32 +8,34 @@ import { CustomerDetails } from '../Models/CustomerDetails';
 })
 export class CustomerDetailsService {
   private http = inject(HttpClient);
-private readonly apiUrl = 'http://localhost:5001/api/Auth';
+  private readonly apiUrl = '/api/Auth';
   public refreshList$ = new Subject<void>();
 
-getDetailsByGiftId(giftId: number) {
-return this.http.get<any[]>(`${this.apiUrl}/by-gift/${giftId}`);
-}
+  getDetailsByGiftId(giftId: number) {
+    return this.http.get<any[]>(`${this.apiUrl}/by-gift/${giftId}`);
+  }
 
-get() {
-  return this.http.get<CustomerDetails[]>(`${this.apiUrl}/all`);
-}
+  get() {
+    return this.http.get<CustomerDetails[]>(`${this.apiUrl}/all`);
+  }
 
-ConfirmPurchase(id: number) {
-  return this.http.get<any[]>(`${this.apiUrl}/ConfirmPurchase?id=${id}`);
-}
+  ConfirmPurchase(id: number) {
+    return this.http.get<any[]>(`${this.apiUrl}/ConfirmPurchase?id=${id}`);
+  }
 
   add(c: CustomerDetails): Observable<CustomerDetails> {
-     return this.http.post<CustomerDetails>(this.apiUrl, c);
-  }
- Delete(id: number): Observable<CustomerDetails> {
-  return this.http.delete<CustomerDetails>(`${this.apiUrl}/${id}`);
-}
-GetMyPurchases(): Observable<CustomerDetails[]> {
-  return this.http.get<CustomerDetails[]>(`${this.apiUrl}/GetMyPurchases`);
+    return this.http.post<CustomerDetails>(this.apiUrl, c);
   }
 
-GetTotalAmount(): Observable<number> { 
-  return this.http.get<number>(`${this.apiUrl}/GetTotalAmount`);
-}
+  Delete(id: number): Observable<CustomerDetails> {
+    return this.http.delete<CustomerDetails>(`${this.apiUrl}/${id}`);
+  }
+
+  GetMyPurchases(): Observable<CustomerDetails[]> {
+    return this.http.get<CustomerDetails[]>(`${this.apiUrl}/GetMyPurchases`);
+  }
+
+  GetTotalAmount(): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/GetTotalAmount`);
+  }
 }

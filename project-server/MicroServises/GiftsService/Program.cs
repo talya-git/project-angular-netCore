@@ -1,16 +1,19 @@
 using GiftsService.Data;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. הוספת תמיכה בקונטרולרים
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 2. הגדרת חיבור למסד הנתונים הייעודי של מתנות (GiftsDb)
-var connectionString = builder.Configuration.GetConnectionString("GiftsConnection") 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=sqlserver;Database=GiftsDb;User Id=sa;Password=YourSecurePassword123!;TrustServerCertificate=True;";
 
 builder.Services.AddDbContext<GiftsDbContext>(options =>
@@ -18,17 +21,16 @@ builder.Services.AddDbContext<GiftsDbContext>(options =>
 
 var app = builder.Build();
 
-// 3. הגדרת Swagger לסביבת פיתוח
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 
-// 4. הרצה אוטומטית של מיגרציות ויצירת בסיס הנתונים בהפעלה
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GiftsDbContext>();

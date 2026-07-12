@@ -1,5 +1,4 @@
 using OrdersService.Data;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,14 +7,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 1. חיבור לבסיס הנתונים הייעודי של ההזמנות (OrdersDb)
-var connectionString = builder.Configuration.GetConnectionString("OrdersConnection") 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=sqlserver;Database=OrdersDb;User Id=sa;Password=YourSecurePassword123!;TrustServerCertificate=True;";
 
 builder.Services.AddDbContext<OrdersDbContext>(options =>
     options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
-// 2. רישום ה-HttpClient כדי לדבר עם שירות המלאי (הכתובת היא שם הקונטיינר בדוקר!)
 builder.Services.AddHttpClient("InventoryClient", client =>
 {
     client.BaseAddress = new Uri("http://inventory-service:8080/");
@@ -29,10 +32,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 
-// הרצת מיגרציות אוטומטית בהפעלה
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
