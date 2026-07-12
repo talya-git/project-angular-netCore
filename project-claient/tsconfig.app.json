@@ -13,9 +13,9 @@
       "primeng/*": ["node_modules/primeng/*"],
       "@primeuix/themes/*": ["node_modules/@primeuix/themes/*"]
     },
+    "ignoreDeprecations": "5.0",
     "types": []
   },
-  "ignoreDeprecations": "6.0",
   "include": [
     "src/**/*.ts"
   ],
