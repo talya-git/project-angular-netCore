@@ -1,8 +1,12 @@
 using GiftsService.Data;
+using MongoDB.Bson.Serialization.Conventions;
 using Serilog;
 using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+ConventionRegistry.Register("camelCase",
+    new ConventionPack { new CamelCaseElementNameConvention() }, _ => true);
 
 builder.Host.UseSerilog((ctx, services, config) => config
     .MinimumLevel.Information()
