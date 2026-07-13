@@ -1,12 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using AuthService.Models;
+using AuthService.Models; 
 
-namespace AuthService.Data
+public class AuthDbContext : DbContext
 {
-    public class AuthDbContext : DbContext
-    {
-        public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options) { }
+    public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
-    }
+    public DbSet<User> Users { get; set; }
 }

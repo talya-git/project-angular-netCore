@@ -1,8 +1,8 @@
 ﻿using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore; 
 
-var builder = WebApplication.CreateBuilder(args);
 
+var builder = WebApplication.CreateBuilder(args);
 // 1. הוספת תמיכה בקונטרולרים ו-Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -101,6 +101,13 @@ using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine($"Error during database initialization: {ex.Message}");
     }
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    db.Database.EnsureDeleted(); 
+    db.Database.EnsureCreated();
 }
 
 app.Run();

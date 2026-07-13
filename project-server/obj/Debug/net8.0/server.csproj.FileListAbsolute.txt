@@ -1,0 +1,9 @@
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\server.csproj.AssemblyReference.cache
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\server.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\server.AssemblyInfoInputs.cache
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\server.AssemblyInfo.cs
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\server.csproj.CoreCompileInputs.cache
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\server.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\server.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Dell\Desktop\project-angular-netCore\project-server\obj\Debug\net8.0\server.sourcelink.json

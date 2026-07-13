@@ -16,4 +16,6 @@ RUN dotnet publish "AuthService.csproj" -c Release -o /app/publish /p:UseAppHost
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+# הוסף את השורה הזו:
+ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "AuthService.dll"]

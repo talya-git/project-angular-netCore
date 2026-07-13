@@ -1,11 +1,8 @@
-namespace AuthService.Models
+public class User
 {
-    public class User
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
-        public string Role { get; set; } = "Student"; // תפקיד ברירת מחדל
-    }
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty; // שינינו ל-Password
+    public string Role { get; set; } = "Student";
 }
