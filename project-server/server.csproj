@@ -26,6 +26,11 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
- 
+  <ItemGroup>
+    <Compile Remove="MicroServises\**" />
+    <Content Remove="MicroServises\**" />
+    <EmbeddedResource Remove="MicroServises\**" />
+    <None Remove="MicroServises\**" />
+  </ItemGroup>
 
 </Project>

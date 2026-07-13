@@ -1,5 +1,7 @@
+using AuthService.Models;
 using Microsoft.EntityFrameworkCore;
-using AuthService.Models; 
+
+namespace AuthService.Data;
 
 public class AuthDbContext : DbContext
 {
