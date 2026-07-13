@@ -24,9 +24,17 @@ namespace GiftsService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Donor>> CreateDonor(Donor donor)
+        public async Task<ActionResult<Donor>> CreateDonor([FromBody] System.Text.Json.JsonElement body)
         {
-            donor.Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString();
+            var donor = new Donor
+            {
+                Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+                FirstName = body.GetProperty("firstName").GetString() ?? "",
+                LastName = body.GetProperty("lastName").GetString() ?? "",
+                Email = body.TryGetProperty("email", out var e) ? e.GetString() ?? "" : "",
+                Phone = body.TryGetProperty("phone", out var p) ? p.GetString() ?? "" : "",
+                Address = body.TryGetProperty("address", out var a) ? a.GetString() ?? "" : ""
+            };
             await _context.Donors.InsertOneAsync(donor);
             return CreatedAtAction(nameof(GetDonors), new { id = donor.Id }, donor);
         }
