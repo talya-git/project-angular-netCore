@@ -29,7 +29,6 @@ builder.Services.AddSingleton(_ => new GiftsDbContext(mongoConnectionString));
 builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConnection);
 
 builder.Services.AddHealthChecks()
-    .AddMongoDb(mongoConnectionString, name: "mongodb")
     .AddRedis(redisConnection, name: "redis");
 
 var app = builder.Build();
