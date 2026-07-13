@@ -1,0 +1,58 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build AuthService
+        run: dotnet build project-server/MicroServises/AuthService/AuthService.csproj -c Release
+
+      - name: Build GiftsService
+        run: dotnet build project-server/MicroServises/GiftsService/GiftsService.csproj -c Release
+
+      - name: Build InventoryService
+        run: dotnet build project-server/MicroServises/InventoryService/InventoryService.csproj -c Release
+
+      - name: Build OrdersService
+        run: dotnet build project-server/MicroServises/OrdersService/OrdersService.csproj -c Release
+
+      - name: Build NotificationService
+        run: dotnet build project-server/MicroServises/NotificationService/NotificationService.csproj -c Release
+
+      - name: Build BffService
+        run: dotnet build project-server/MicroServises/BffService/BffService.csproj -c Release
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Smoke test — wait for /health endpoints
+        run: |
+          docker compose up -d
+          echo "Waiting for services to be healthy..."
+          sleep 60
+          curl -f http://localhost:5001/health || exit 1
+          curl -f http://localhost:5003/health || exit 1
+          curl -f http://localhost:5004/health || exit 1
+          curl -f http://localhost:5007/health || exit 1
+          echo "All health checks passed!"
+          docker compose down

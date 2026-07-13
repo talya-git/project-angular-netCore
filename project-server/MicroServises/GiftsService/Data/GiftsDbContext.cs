@@ -1,13 +1,18 @@
-using Microsoft.EntityFrameworkCore;
 using GiftsService.Models;
+using MongoDB.Driver;
 
 namespace GiftsService.Data
 {
-    public class GiftsDbContext : DbContext
+    public class GiftsDbContext
     {
-        public GiftsDbContext(DbContextOptions<GiftsDbContext> options) : base(options) { }
+        private readonly IMongoDatabase _database;
 
-        public DbSet<Gift> Gifts { get; set; }
-        public DbSet<Donor> Donors { get; set; }
+        public GiftsDbContext(IMongoDatabase database)
+        {
+            _database = database;
+        }
+
+        public IMongoCollection<Gift> Gifts => _database.GetCollection<Gift>("gifts");
+        public IMongoCollection<Donor> Donors => _database.GetCollection<Donor>("donors");
     }
 }

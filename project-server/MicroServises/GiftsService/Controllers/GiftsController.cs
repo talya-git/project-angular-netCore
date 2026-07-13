@@ -1,7 +1,9 @@
 using GiftsService.Data;
 using GiftsService.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using MongoDB.Driver;
+using System.Text.Json;
 
 namespace GiftsService.Controllers
 {
@@ -10,25 +12,44 @@ namespace GiftsService.Controllers
     public class GiftsController : ControllerBase
     {
         private readonly GiftsDbContext _context;
+        private readonly IDistributedCache _cache;
+        private const string CacheKey = "gifts:all";
 
-        public GiftsController(GiftsDbContext context)
+        public GiftsController(GiftsDbContext context, IDistributedCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
-        // GET: api/Gifts
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Gift>>> GetGifts()
         {
-            return await _context.Gifts.Include(g => g.Donor).ToListAsync();
+            var correlationId = Request.Headers["X-Correlation-Id"].ToString();
+
+            var cached = await _cache.GetStringAsync(CacheKey);
+            if (cached is not null)
+            {
+                Console.WriteLine($"[Cache HIT] gifts:all CorrelationId={correlationId}");
+                return Ok(JsonSerializer.Deserialize<List<Gift>>(cached));
+            }
+
+            Console.WriteLine($"[Cache MISS] gifts:all — fetching from MongoDB. CorrelationId={correlationId}");
+            var gifts = await _context.Gifts.Find(_ => true).ToListAsync();
+            foreach (var gift in gifts)
+                gift.Donor = await _context.Donors.Find(d => d.Id == gift.DonorId).FirstOrDefaultAsync();
+
+            var options = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) };
+            await _cache.SetStringAsync(CacheKey, JsonSerializer.Serialize(gifts), options);
+
+            return gifts;
         }
 
-        // POST: api/Gifts
         [HttpPost]
         public async Task<ActionResult<Gift>> CreateGift(Gift gift)
         {
-            _context.Gifts.Add(gift);
-            await _context.SaveChangesAsync();
+            await _context.Gifts.InsertOneAsync(gift);
+            await _cache.RemoveAsync(CacheKey); // invalidate cache on write
+            Console.WriteLine($"[Cache INVALIDATED] gifts:all after new gift created");
             return CreatedAtAction(nameof(GetGifts), new { id = gift.Id }, gift);
         }
     }

@@ -1,7 +1,8 @@
 using OrdersService.Data;
+using OrdersService.Messaging;
 using OrdersService.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace OrdersService.Controllers
 {
@@ -10,37 +11,39 @@ namespace OrdersService.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly OrdersDbContext _context;
-        private readonly IHttpClientFactory _clientFactory;
+        private readonly RabbitMqPublisher _publisher;
 
-        public OrdersController(OrdersDbContext context, IHttpClientFactory clientFactory)
+        public OrdersController(OrdersDbContext context, RabbitMqPublisher publisher)
         {
             _context = context;
-            _clientFactory = clientFactory;
+            _publisher = publisher;
         }
 
-        // POST: api/Orders -> יצירת הזמנה חדשה ועדכון מלאי מבוזר
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] Order order)
         {
-            var client = _clientFactory.CreateClient("InventoryClient");
-
-            // 1. מעבר על כל הפריטים בהזמנה ועדכון המלאי בשירות המלאי
-            foreach (var item in order.Items)
-            {
-                var reduceRequest = new { GiftId = item.GiftId, Quantity = item.Quantity };
-                var response = await client.PostAsJsonAsync("api/Inventory/reduce", reduceRequest);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    return BadRequest($"Failed to secure tickets for Gift ID {item.GiftId}. Out of stock or service unavailable.");
-                }
-            }
-
-            // 2. אם כל המלאי עודכן בהצלחה - נשמור את ההזמנה אצלנו
+            order.Status = "Pending";
+            order.CorrelationId = Guid.NewGuid().ToString();
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            return Ok(new { Message = "Order created successfully!", OrderId = order.Id });
+            var evt = new OrderPlacedEvent(
+                order.Id,
+                order.CorrelationId,
+                order.Items.Select(i => new OrderItemDto(i.GiftId, i.Quantity)).ToList()
+            );
+            _publisher.PublishOrderPlaced(evt);
+
+            Console.WriteLine($"[Saga] Order {order.Id} created with Status=Pending. CorrelationId={order.CorrelationId}");
+            return Accepted(new { Message = "Order received, processing...", OrderId = order.Id, CorrelationId = order.CorrelationId });
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrder(int id)
+        {
+            var order = await _context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == id);
+            if (order is null) return NotFound();
+            return Ok(order);
         }
     }
 }

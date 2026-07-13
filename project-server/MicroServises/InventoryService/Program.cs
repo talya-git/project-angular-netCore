@@ -1,23 +1,37 @@
 using InventoryService.Data;
+using InventoryService.Messaging;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, services, config) => config
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "InventoryService")
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{Service}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Seq(ctx.Configuration["Seq:Url"] ?? "http://seq:5341"));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
-{
     options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-});
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=sqlserver;Database=InventoryDb;User Id=sa;Password=YourSecurePassword123!;TrustServerCertificate=True;";
 
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
+
+builder.Services.AddHostedService<OrderPlacedConsumer>();
+
+builder.Services.AddHealthChecks()
+    .AddSqlServer(connectionString, name: "sqlserver");
 
 var app = builder.Build();
 
@@ -27,32 +41,28 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.Use(async (ctx, next) =>
+{
+    if (!ctx.Request.Headers.ContainsKey("X-Correlation-Id"))
+        ctx.Request.Headers["X-Correlation-Id"] = Guid.NewGuid().ToString();
+    ctx.Response.Headers["X-Correlation-Id"] = ctx.Request.Headers["X-Correlation-Id"];
+    await next();
+});
+
+app.UseSerilogRequestLogging();
 app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 using (var scope = app.Services.CreateScope())
 {
     var masterConn = connectionString.Replace("Database=InventoryDb", "Database=master");
-    bool serverReady = false;
     for (var retry = 0; retry < 12; retry++)
     {
-        try
-        {
-            using var conn = new Microsoft.Data.SqlClient.SqlConnection(masterConn);
-            conn.Open();
-            serverReady = true;
-            break;
-        }
-        catch
-        {
-            Console.WriteLine($"Waiting for SQL Server for InventoryService... attempt {retry + 1}/12");
-            Thread.Sleep(TimeSpan.FromSeconds(5));
-        }
+        try { using var conn = new Microsoft.Data.SqlClient.SqlConnection(masterConn); conn.Open(); break; }
+        catch { Log.Warning("Waiting for SQL Server... attempt {Retry}/12", retry + 1); Thread.Sleep(5000); }
     }
-
-    if (!serverReady) throw new Exception("InventoryService could not connect to SQL Server.");
-
     var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
     db.Database.EnsureCreated();
 }
