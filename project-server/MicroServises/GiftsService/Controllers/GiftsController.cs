@@ -45,8 +45,16 @@ namespace GiftsService.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Gift>> CreateGift(Gift gift)
+        public async Task<ActionResult<Gift>> CreateGift([FromBody] System.Text.Json.JsonElement body)
         {
+            var gift = new Gift
+            {
+                Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+                Name = body.GetProperty("name").GetString() ?? "",
+                Description = body.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "",
+                Price = body.TryGetProperty("priceCard", out var p) ? p.GetDecimal() : 0,
+                DonorId = body.TryGetProperty("donorId", out var did) ? did.GetString() ?? "" : ""
+            };
             gift.Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString();
             await _context.Gifts.InsertOneAsync(gift);
             await _cache.RemoveAsync(CacheKey);
