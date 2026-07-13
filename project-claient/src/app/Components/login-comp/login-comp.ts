@@ -36,29 +36,29 @@ export class LoginComp implements OnInit {
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      Email: ['', [Validators.required]],
+      UserName: ['', [Validators.required]],
       Password: ['', [Validators.required]]
     });
   }
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      const { Email, Password } = this.loginForm.value;
-      this.login(Email, Password);
+      const { UserName, Password } = this.loginForm.value;
+      this.login(UserName, Password);
     } else {
       this.loginForm.markAllAsTouched();
     }
   }
 
-  login(email: string, password: string) {
-  this.authSrv.Login(email, password).subscribe({
+  login(userName: string, password: string) {
+  this.authSrv.Login(userName, password).subscribe({
     next: (data: any) => {
       if (data && data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userRole', data.role || 'user');
-        localStorage.setItem('userName', data.username || email);
+        localStorage.setItem('userName', data.username || userName);
 
-        alert(`שלום ${data.username || email}, התחברת בהצלחה!`);
+        alert(`שלום ${data.username || userName}, התחברת בהצלחה!`);
         this.router.navigate(['/home']); 
       } else {
         alert("התחברות הצליחה אך חסרים נתוני גישה. פני למנהל המערכת.");

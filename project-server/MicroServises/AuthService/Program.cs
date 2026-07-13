@@ -39,8 +39,6 @@ using (var scope = app.Services.CreateScope())
     
     try 
     {
-        // אפשרות א': למחוק וליצור מחדש (הכי בטוח לפיתוח)
-        db.Database.EnsureDeleted(); 
         db.Database.EnsureCreated();
         Console.WriteLine("Database initialized successfully.");
     }

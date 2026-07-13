@@ -27,8 +27,11 @@ namespace AuthService.Controllers
             var user = new User
             {
                 Name = request.Name,
+                UserName = request.UserName,
                 Email = request.Email,
-                Password = request.Password // כאן שונה ל-Password
+                Password = request.Password,
+                Phone = request.Phone,
+                Address = request.Address
             };
 
             _context.Users.Add(user);
@@ -41,19 +44,18 @@ namespace AuthService.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // השוואה מול השדה 'Password' שתואם למה שנשמר בהרשמה
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email && u.Password == request.Password);
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                (u.UserName == request.UserName || u.Email == request.UserName) &&
+                u.Password == request.Password);
             
             if (user == null) 
-            {
-                return Unauthorized("Invalid email or password.");
-            }
+                return Unauthorized("Invalid credentials.");
 
             var token = $"dummy-jwt-token-for-{user.Email}-role-{user.Role}";
             return Ok(new { Token = token, Username = user.Name, Role = user.Role });
         }
     }
 
-    public class RegisterRequest { public string Name { get; set; } = ""; public string Email { get; set; } = ""; public string Password { get; set; } = ""; }
-    public class LoginRequest { public string Email { get; set; } = ""; public string Password { get; set; } = ""; }
+    public class RegisterRequest { public string Name { get; set; } = ""; public string UserName { get; set; } = ""; public string Email { get; set; } = ""; public string Password { get; set; } = ""; public string Phone { get; set; } = ""; public string Address { get; set; } = ""; }
+    public class LoginRequest { public string UserName { get; set; } = ""; public string Password { get; set; } = ""; }
 }
