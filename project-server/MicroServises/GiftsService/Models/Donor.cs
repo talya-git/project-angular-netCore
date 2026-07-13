@@ -6,6 +6,7 @@ namespace GiftsService.Models
     public class Donor
     {
         [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
