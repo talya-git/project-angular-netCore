@@ -80,7 +80,7 @@ services:
 
   client:
     build:
-      context: .
+      context: ./project-claient
       dockerfile: Dockerfile
     container_name: lottery_client
     ports:
