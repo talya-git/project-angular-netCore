@@ -31,7 +31,7 @@
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>קוד תורם</mat-label>
-            <input matInput type="number" formControlName="donorId">
+            <input matInput formControlName="donorId">
             <mat-icon matSuffix>person</mat-icon>
             <mat-error *ngIf="frmGift.controls['donorId'].invalid">יש להזין קוד תורם תקין (מעל 0)</mat-error>
           </mat-form-field>
