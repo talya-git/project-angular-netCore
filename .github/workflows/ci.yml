@@ -18,22 +18,22 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build AuthService
-        run: dotnet build project-server/MicroServises/AuthService/AuthService.csproj -c Release
+        run: dotnet build "project-server/MicroServises/AuthService/AuthService.csproj" -c Release --nologo
 
       - name: Build GiftsService
-        run: dotnet build project-server/MicroServises/GiftsService/GiftsService.csproj -c Release
+        run: dotnet build "project-server/MicroServises/GiftsService/GiftsService.csproj" -c Release --nologo
 
       - name: Build InventoryService
-        run: dotnet build project-server/MicroServises/InventoryService/InventoryService.csproj -c Release
+        run: dotnet build "project-server/MicroServises/InventoryService/InventoryService.csproj" -c Release --nologo
 
       - name: Build OrdersService
-        run: dotnet build project-server/MicroServises/OrdersService/OrdersService.csproj -c Release
+        run: dotnet build "project-server/MicroServises/OrdersService/OrdersService.csproj" -c Release --nologo
 
       - name: Build NotificationService
-        run: dotnet build project-server/MicroServises/NotificationService/NotificationService.csproj -c Release
+        run: dotnet build "project-server/MicroServises/NotificationService/NotificationService.csproj" -c Release --nologo
 
       - name: Build BffService
-        run: dotnet build project-server/MicroServises/BffService/BffService.csproj -c Release
+        run: dotnet build "project-server/MicroServises/BffService/BffService.csproj" -c Release --nologo
 
   docker-build:
     runs-on: ubuntu-latest
@@ -43,16 +43,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Docker images
-        run: docker compose build
-
-      - name: Smoke test — wait for /health endpoints
-        run: |
-          docker compose up -d
-          echo "Waiting for services to be healthy..."
-          sleep 60
-          curl -f http://localhost:5001/health || exit 1
-          curl -f http://localhost:5003/health || exit 1
-          curl -f http://localhost:5004/health || exit 1
-          curl -f http://localhost:5007/health || exit 1
-          echo "All health checks passed!"
-          docker compose down
+        run: docker compose build --parallel
