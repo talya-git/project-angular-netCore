@@ -36,22 +36,22 @@ export class LoginComp implements OnInit {
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      UserName: ['', [Validators.required]],
+      Email: ['', [Validators.required]],
       Password: ['', [Validators.required]]
     });
   }
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      const { UserName, Password } = this.loginForm.value;
-      this.login(UserName, Password);
+      const { Email, Password } = this.loginForm.value;
+      this.login(Email, Password);
     } else {
       this.loginForm.markAllAsTouched();
     }
   }
 
-  login(userName: string, password: string) {
-  this.authSrv.Login(userName, password).subscribe({
+  login(email: string, password: string) {
+  this.authSrv.Login(email, password).subscribe({
     next: (data: any) => {
       if (data && data.token) {
         localStorage.setItem('token', data.token);
