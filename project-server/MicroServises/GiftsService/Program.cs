@@ -24,10 +24,7 @@ builder.Services.AddCors(options =>
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoConnection")
     ?? "mongodb://mongodb:27017";
 
-builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
-builder.Services.AddScoped<IMongoDatabase>(sp =>
-    sp.GetRequiredService<IMongoClient>().GetDatabase("GiftsDb"));
-builder.Services.AddScoped<GiftsDbContext>();
+builder.Services.AddSingleton<GiftsDbContext>(_ => new GiftsDbContext(mongoConnectionString));
 
 var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "redis:6379";
 builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConnection);

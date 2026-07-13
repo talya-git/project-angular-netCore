@@ -7,9 +7,10 @@ namespace GiftsService.Data
     {
         private readonly IMongoDatabase _database;
 
-        public GiftsDbContext(IMongoDatabase database)
+        public GiftsDbContext(string connectionString)
         {
-            _database = database;
+            var client = new MongoClient(connectionString);
+            _database = client.GetDatabase("GiftsDb");
         }
 
         public IMongoCollection<Gift> Gifts => _database.GetCollection<Gift>("gifts");
