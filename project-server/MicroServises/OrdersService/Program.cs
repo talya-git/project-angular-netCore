@@ -38,26 +38,28 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
+    var masterConn = connectionString.Replace("Database=OrdersDb", "Database=master");
+    bool serverReady = false;
+    for (var retry = 0; retry < 12; retry++)
+    {
+        try
+        {
+            using var conn = new Microsoft.Data.SqlClient.SqlConnection(masterConn);
+            conn.Open();
+            serverReady = true;
+            break;
+        }
+        catch
+        {
+            Console.WriteLine($"Waiting for SQL Server for OrdersService... attempt {retry + 1}/12");
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        }
+    }
+
+    if (!serverReady) throw new Exception("OrdersService could not connect to SQL Server.");
+
     var db = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
-    for (var retry = 0; retry < 12 && !db.Database.CanConnect(); retry++)
-    {
-        Console.WriteLine($"Waiting for SQL Server for OrdersService... attempt {retry + 1}/12");
-        Thread.Sleep(TimeSpan.FromSeconds(5));
-    }
-
-    if (!db.Database.CanConnect())
-    {
-        throw new Exception("OrdersService could not connect to SQL Server.");
-    }
-
-    if (db.Database.GetMigrations().Any())
-    {
-        db.Database.Migrate();
-    }
-    else
-    {
-        db.Database.EnsureCreated();
-    }
+    db.Database.EnsureCreated();
 }
 
 app.Run();
