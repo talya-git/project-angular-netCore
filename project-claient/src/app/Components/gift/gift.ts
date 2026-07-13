@@ -30,7 +30,7 @@ frmGift: FormGroup = new FormGroup({
   id: new FormControl(0),
   name: new FormControl('', [Validators.required, Validators.minLength(2)]),
   priceCard: new FormControl(0, [Validators.required]),
-  donorId: new FormControl(0, [Validators.required, Validators.min(1)]),
+  donorId: new FormControl('', [Validators.required, Validators.minLength(1)]),
   donorName: new FormControl(''),
   Category: new FormControl(''),
   GiftImage: new FormControl('')
