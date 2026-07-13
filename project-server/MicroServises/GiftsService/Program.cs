@@ -1,5 +1,4 @@
 using GiftsService.Data;
-using MongoDB.Driver;
 using Serilog;
 using Serilog.Events;
 
@@ -24,9 +23,9 @@ builder.Services.AddCors(options =>
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoConnection")
     ?? "mongodb://mongodb:27017";
 
-builder.Services.AddSingleton<GiftsDbContext>(_ => new GiftsDbContext(mongoConnectionString));
-
 var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "redis:6379";
+
+builder.Services.AddSingleton(_ => new GiftsDbContext(mongoConnectionString));
 builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConnection);
 
 builder.Services.AddHealthChecks()
