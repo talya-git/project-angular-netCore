@@ -56,9 +56,9 @@ export class LoginComp implements OnInit {
       if (data && data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userRole', data.role || 'user');
-        localStorage.setItem('userName', data.userName || userName);
+        localStorage.setItem('userName', data.username || email);
 
-        alert(`שלום ${data.userName || userName}, התחברת בהצלחה!`);
+        alert(`שלום ${data.username || email}, התחברת בהצלחה!`);
         this.router.navigate(['/home']); 
       } else {
         alert("התחברות הצליחה אך חסרים נתוני גישה. פני למנהל המערכת.");
