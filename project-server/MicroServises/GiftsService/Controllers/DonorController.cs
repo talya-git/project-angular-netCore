@@ -26,6 +26,7 @@ namespace GiftsService.Controllers
         [HttpPost]
         public async Task<ActionResult<Donor>> CreateDonor(Donor donor)
         {
+            donor.Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString();
             await _context.Donors.InsertOneAsync(donor);
             return CreatedAtAction(nameof(GetDonors), new { id = donor.Id }, donor);
         }

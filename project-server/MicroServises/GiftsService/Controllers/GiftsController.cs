@@ -47,8 +47,9 @@ namespace GiftsService.Controllers
         [HttpPost]
         public async Task<ActionResult<Gift>> CreateGift(Gift gift)
         {
+            gift.Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString();
             await _context.Gifts.InsertOneAsync(gift);
-            await _cache.RemoveAsync(CacheKey); // invalidate cache on write
+            await _cache.RemoveAsync(CacheKey);
             Console.WriteLine($"[Cache INVALIDATED] gifts:all after new gift created");
             return CreatedAtAction(nameof(GetGifts), new { id = gift.Id }, gift);
         }
